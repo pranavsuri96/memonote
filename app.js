@@ -7,8 +7,16 @@ if (typeof document !== 'undefined') {
             return;
         }
 
-        // Generate a unique ID for the note
-        const noteId = Math.random().toString(36).substr(2, 9);
+        // Check if a note ID already exists in sessionStorage
+        let noteId = sessionStorage.getItem('currentNoteId');
+
+        if (!noteId) {
+            // Generate a unique ID for the note if it doesn't exist
+            noteId = Math.random().toString(36).substr(2, 9);
+            sessionStorage.setItem('currentNoteId', noteId);
+        }
+
+        // Save the note content in localStorage
         localStorage.setItem(noteId, noteContent);
 
         // Generate a shareable link
@@ -46,6 +54,7 @@ if (typeof document !== 'undefined') {
 
             if (noteContent) {
                 document.getElementById('note-content').value = noteContent;
+                sessionStorage.setItem('currentNoteId', noteId); // Set the note ID for the session
             } else {
                 alert('Note not found!');
             }
