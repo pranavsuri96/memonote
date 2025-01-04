@@ -4,8 +4,8 @@
   "description": "A collaborative notes application with link-based sharing",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "build": "node app.js"
+    "start": "node app.js", 
+    "build": "echo 'Build process completed.'" 
   },
   "dependencies": {
     "body-parser": "^1.20.3",
