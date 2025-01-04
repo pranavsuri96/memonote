@@ -39,17 +39,22 @@ app.post('/save-note', async (req, res) => {
   const { noteId, content } = req.body;
 
   try {
+    // If noteId is not provided in the request, generate a new one using uuid
+    const id = noteId || uuidv4(); // Generate unique noteId if not provided
+
     // Check if the note already exists
-    let note = await Note.findOne({ noteId });
+    let note = await Note.findOne({ noteId: id });
 
     if (note) {
       // Update the note if it already exists
       note.content = content;
       await note.save();
+      console.log('Note updated:', note);
     } else {
       // Create a new note if it doesn't exist
-      note = new Note({ noteId, content });
+      note = new Note({ noteId: id, content });
       await note.save();
+      console.log('New note created:', note);
     }
 
     // Generate the URL for the note - Ensure that the path is correct
@@ -58,7 +63,7 @@ app.post('/save-note', async (req, res) => {
     // Return the full URL as the response
     res.status(200).json({ success: true, noteUrl: noteUrl });
   } catch (error) {
-    console.log(error);
+    console.log('Error saving note:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -76,7 +81,7 @@ app.get('/get-note/:noteId', async (req, res) => {
 
     res.status(200).json({ success: true, content: note.content });
   } catch (error) {
-    console.log(error);
+    console.log('Error fetching note:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
