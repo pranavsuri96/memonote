@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// MongoDB connection string (replace with your connection string from Azure Cosmos DB)
+// MongoDB connection string (replace with your actual MongoDB connection string)
 const mongoURI = 'mongodb://memonote:y3cWZyx3A7oNcycRLfQHAwo7czsi1twfvSYIrDi9l0KledCmXUWnHNMoQed3YpiuEcGHS8ikbOzWACDb6OQB9Q==@memonote.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@memonote@';
 
 // Connect to MongoDB (Azure Cosmos DB)
@@ -39,7 +39,7 @@ app.post('/save-note', async (req, res) => {
       await note.save();
     } else {
       // Create a new note if it doesn't exist
-      note = new Note({ noteId: uuidv4(), content });
+      note = new Note({ noteId, content });
       await note.save();
     }
 
@@ -73,4 +73,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
