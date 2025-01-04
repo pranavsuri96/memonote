@@ -1,63 +1,75 @@
-if (typeof document !== 'undefined') {
-    document.getElementById('save-note').addEventListener('click', () => {
-        const noteContent = document.getElementById('note-content').value;
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const { v4: uuidv4 } = require('uuid'); // For generating unique note IDs
 
-        if (!noteContent.trim()) {
-            alert('Please write something in the note!');
-            return;
-        }
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
 
-        // Check if a note ID already exists in sessionStorage
-        let noteId = sessionStorage.getItem('currentNoteId');
+// MongoDB connection string (replace with your connection string from Azure Cosmos DB)
+const mongoURI = 'mongodb://memonote:y3cWZyx3A7oNcycRLfQHAwo7czsi1twfvSYIrDi9l0KledCmXUWnHNMoQed3YpiuEcGHS8ikbOzWACDb6OQB9Q==@memonote.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@memonote@';
 
-        if (!noteId) {
-            // Generate a unique ID for the note if it doesn't exist
-            noteId = Math.random().toString(36).substr(2, 9);
-            sessionStorage.setItem('currentNoteId', noteId);
-        }
+// Connect to MongoDB (Azure Cosmos DB)
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB connected'))
+  .catch((err) => console.log(err));
 
-        // Save the note content in localStorage
-        localStorage.setItem(noteId, noteContent);
+// Define a schema for a note
+const noteSchema = new mongoose.Schema({
+  noteId: { type: String, required: true, unique: true },
+  content: { type: String, required: true }
+});
 
-        // Generate a shareable link
-        const shareLink = `${window.location.origin}?note=${noteId}`;
-        document.getElementById('share-link').value = shareLink;
+// Create a model for the note
+const Note = mongoose.model('Note', noteSchema);
 
-        // Show the share link
-        document.getElementById('note-link').classList.remove('hidden');
-    });
+// Route to save a new note or update an existing one
+app.post('/save-note', async (req, res) => {
+  const { noteId, content } = req.body;
 
-    document.getElementById('copy-link').addEventListener('click', () => {
-        const shareLinkInput = document.getElementById('share-link');
+  try {
+    // Check if the note already exists
+    let note = await Note.findOne({ noteId });
 
-        // Select the text in the input field
-        shareLinkInput.select();
-        shareLinkInput.setSelectionRange(0, 99999); // For mobile compatibility
+    if (note) {
+      // Update the note if it already exists
+      note.content = content;
+      await note.save();
+    } else {
+      // Create a new note if it doesn't exist
+      note = new Note({ noteId: uuidv4(), content });
+      await note.save();
+    }
 
-        // Copy the text to the clipboard
-        navigator.clipboard.writeText(shareLinkInput.value)
-            .then(() => {
-                alert('Link copied to clipboard!');
-            })
-            .catch(err => {
-                console.error('Could not copy text: ', err);
-            });
-    });
+    res.status(200).json({ success: true, noteId: note.noteId });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
-    // Check if the page has a note ID in the URL
-    window.onload = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const noteId = urlParams.get('note');
+// Route to get a note by its ID
+app.get('/get-note/:noteId', async (req, res) => {
+  const { noteId } = req.params;
 
-        if (noteId) {
-            const noteContent = localStorage.getItem(noteId);
+  try {
+    const note = await Note.findOne({ noteId });
 
-            if (noteContent) {
-                document.getElementById('note-content').value = noteContent;
-                sessionStorage.setItem('currentNoteId', noteId); // Set the note ID for the session
-            } else {
-                alert('Note not found!');
-            }
-        }
-    };
-}
+    if (!note) {
+      return res.status(404).json({ success: false, message: 'Note not found' });
+    }
+
+    res.status(200).json({ success: true, content: note.content });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Server port
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
