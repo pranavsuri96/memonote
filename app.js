@@ -52,10 +52,10 @@ app.post('/save-note', async (req, res) => {
       await note.save();
     }
 
-    // Generate the URL for the note
-    const noteUrl = `https://memonote.azurewebsites.net/get-note/${note.noteId}`;
+    // Generate the URL for the note - Ensure that the path is correct
+    const noteUrl = `${req.protocol}://${req.get('host')}/get-note/${note.noteId}`;
 
-    // Return the URL as the response
+    // Return the full URL as the response
     res.status(200).json({ success: true, noteUrl: noteUrl });
   } catch (error) {
     console.log(error);
