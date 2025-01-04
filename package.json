@@ -4,8 +4,8 @@
   "description": "A collaborative notes application with link-based sharing",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",  // This starts the app in production
-    "build": "echo 'No build step necessary, just running the app!'"  // This just echoes a message for now
+    "start": "node app.js",
+    "build": "echo 'No build step necessary, just running the app!'"
   },
   "dependencies": {
     "body-parser": "^1.20.3",
