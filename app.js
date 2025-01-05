@@ -5,7 +5,16 @@ const cors = require('cors');
 const { v4: uuidv4 } = require('uuid'); // For generating unique note IDs
 
 const app = express();
-app.use(cors());
+
+// Enabling CORS with proper options to allow mobile and other device access
+const corsOptions = {
+  origin: '*',  // Allowing any origin, but you can limit it to your front-end domain (for security)
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+app.use(cors(corsOptions));
+
+// Middleware for parsing JSON bodies
 app.use(bodyParser.json());
 
 // MongoDB connection string (replace with your actual MongoDB connection string)
@@ -73,4 +82,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
