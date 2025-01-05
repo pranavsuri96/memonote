@@ -52,6 +52,7 @@ app.post('/save-note', async (req, res) => {
       await note.save();
     }
 
+    // Return success with the saved noteId
     res.status(200).json({ success: true, noteId: note.noteId });
   } catch (error) {
     console.log(error);
@@ -70,6 +71,7 @@ app.get('/get-note/:noteId', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Note not found' });
     }
 
+    // Return the note content if found
     res.status(200).json({ success: true, content: note.content });
   } catch (error) {
     console.log(error);
